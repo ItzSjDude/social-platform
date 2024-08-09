@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - redis
+      - kafka
+
+  frontend:
+    build:
+      context: ./social-media-frontend
+    ports:
+      - "3000:3000"
+
+  posts-service:
+    build:
+      context: ./posts-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+      - kafka
+
+  comments-service:
+    build:
+      context: ./comments-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongo
+      - kafka
+
+  likes-service:
+    build:
+      context: ./likes-service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongo
+      - kafka
+
+  user-service:
+    build:
+      context: ./user-service
+    ports:
+      - "5004:5004"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_NAMES: INSIDE,OUTSIDE
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
